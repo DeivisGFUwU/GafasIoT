@@ -1,0 +1,3 @@
+export const SUPABASE_URL = 'https://grecwzbdqdtiuunepuwz.supabase.co';
+export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyZWN3emJkcWR0aXV1bmVwdXd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI4MDU0MzcsImV4cCI6MjA3ODM4MTQzN30.BpR2ud2H24j_BtuKqi_Z7VaVz2WxgD2dWBCz8lOXBNM';
+export const DETECTIONS_TABLE = 'detections';

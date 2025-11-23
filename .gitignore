@@ -1,6 +1,7 @@
 # OSX
 #
 .DS_Store
+Thumbs.db
 
 # Xcode
 #
@@ -32,8 +33,14 @@ local.properties
 *.hprof
 .cxx/
 *.keystore
+*.jks
 !debug.keystore
 .kotlin/
+
+# Android Build Outputs
+android/app/build/
+android/.gradle/
+android/app/src/main/assets/
 
 # node.js
 #
@@ -73,3 +80,37 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# SECRETS & SENSITIVE FILES
+# ⚠️ CRITICAL: Never commit these files
+.env
+.env.local
+.env.production
+android/key.properties
+android/keystore.properties
+ios/GoogleService-Info.plist
+google-services.json
+
+# Supabase Config (if contains sensitive data)
+# Uncomment if you store credentials here:
+# src/utils/supabaseConfig.ts
+
+# Internal Documentation
+SPECIFICATION.md
+BUILD_INSTRUCTIONS.md
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

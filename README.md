@@ -1,97 +1,263 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# GafasIOT - Asistente Auditivo con IA y BLE 👓👂
 
-# Getting Started
+[![React Native](https://img.shields.io/badge/React%20Native-0.78.3-blue.svg)](https://reactnative.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7.0-blue.svg)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+GafasIOT es una aplicación móvil diseñada para asistir a personas con discapacidad auditiva. Se conecta a unas gafas inteligentes (ESP32) para detectar sonidos del entorno en tiempo real, clasificarlos y mostrarlos como alertas visuales y hápticas. Además, incluye un modo de transcripción de voz a texto para facilitar conversaciones.
 
-## Step 1: Start Metro
+## 🎯 Características Principales
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+- **🔊 Detección de Sonidos en Tiempo Real**: Identifica sirenas, cláxones, obras, voces, etc.
+- **🚨 Sistema de Alertas Inteligente**:
+  - **Peligro (Rojo)**: Sirenas, Cláxones → Siempre visibles, incluso durante transcripción
+  - **Atención (Amarillo)**: Voces humanas → Clickeable para ir a transcripción
+  - **Info (Verde)**: Obras, Aire acondicionado, Motores
+- **🗣️ Transcripción de Voz (Speech-to-Text)**: Convierte voz a texto en pantalla para conversaciones fluidas
+- **🎭 Supresión Inteligente**: Durante transcripción, solo alertas rojas (peligro) interrumpen
+- **🌐 Overlay Global**: Alertas críticas aparecen sobre cualquier pantalla
+- **🎮 Modo Demo**: Simulación integrada para probar la UI sin hardware
+- **📡 Verificación de Bluetooth**: Mensaje amigable si BLE está desactivado
+- **🏗️ Arquitectura Robusta**: Clean Architecture + Adapter Pattern
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+## 📸 Screenshots
 
-```sh
-# Using npm
-npm start
+> _Agrega capturas de pantalla de tu app aquí_
 
-# OR using Yarn
-yarn start
+## 🛠️ Stack Tecnológico
+
+### Core
+- **React Native**: 0.78.3
+- **React**: 19.0.0
+- **TypeScript**: 5.7.0
+- **Node.js**: ≥18
+
+### Navegación
+- **@react-navigation/native**: 6.1.17
+- **@react-navigation/stack**: 6.3.29
+- **react-native-screens**: 4.0.0
+- **react-native-gesture-handler**: 2.16.2
+- **react-native-safe-area-context**: 5.0.0
+
+### Conectividad & Sensores
+- **react-native-ble-plx**: 3.5.0 (Bluetooth Low Energy)
+- **@react-native-voice/voice**: 3.2.4 (Speech-to-Text)
+- **@react-native-community/netinfo**: 11.3.0
+
+### Backend & Autenticación
+- **@supabase/supabase-js**: 2.45.0
+- **@react-native-async-storage/async-storage**: 2.2.0
+
+### Notificaciones
+- **@notifee/react-native**: 9.1.8
+
+### Herramientas de Desarrollo
+- **Babel**: 7.25.2
+- **ESLint**: 8.57.0
+- **Jest**: 29.6.3
+- **Prettier**: 3.4.0
+
+## 🏗️ Arquitectura
+
+El proyecto sigue una arquitectura modular y escalable:
+
+```
+src/
+├── components/        # Componentes reutilizables (LiveAlert)
+├── config/           # Configuración (soundMapping.ts)
+├── context/          # Estado global (AlertContext, AppContext)
+├── navigation/       # Navegación (RootNavigator)
+├── screens/          # Pantallas principales
+│   ├── Auth/        # Login, Registro
+│   ├── Home/        # Pantalla principal, Detalles
+│   ├── Scan/        # Escaneo BLE
+│   └── Voice/       # Transcripción
+├── services/         # Servicios (BLE, Auth, Detection, Notification)
+├── types/           # TypeScript types
+└── utils/           # Utilidades (UUID, Supabase config)
 ```
 
-## Step 2: Build and run your app
+### Patrones de Diseño
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+- **Adapter Pattern**: Normalización de datos del firmware (`soundMapping.ts`)
+- **Context API**: Gestión de estado global
+- **Service Layer**: Separación de lógica de negocio
+- **Component Composition**: Componentes reutilizables y modulares
 
-### Android
+## 📡 Integración IoT (Firmware ESP32)
 
-```sh
-# Using npm
-npm run android
+### Especificaciones BLE
 
-# OR using Yarn
-yarn android
+- **Service UUID**: `12345678-1234-1234-1234-1234567890ab`
+- **Characteristic UUID**: `abcdefab-1234-5678-9abc-1234567890ab`
+
+### Formato de Datos (JSON Payload)
+
+El firmware debe enviar notificaciones con el siguiente formato:
+
+```json
+{
+  "top": "SIREN",        // Etiqueta del sonido (case-insensitive)
+  "lado": "izquierda",   // Dirección (izquierda, derecha, centro, atras)
+  "conf": 0.95           // Nivel de confianza (0.0 - 1.0)
+}
 ```
 
-### iOS
+### Clases de Sonido Soportadas
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+#### 🚨 Peligro (Rojo)
+- `SIREN` → Sirena
+- `CAR_HORN` → Claxon
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+#### ⚠️ Atención (Amarillo)
+- `voice` / `human_voice` → Voz humana
 
-```sh
-bundle install
+#### 🔔 Informativo (Verde)
+- `DRILLING` → Obras/Taladro
+- `AIR_CONDITIONER` → Aire Acondicionado
+- `ENGINE_IDLING` → Motor de Auto
+
+> **Nota**: El mapeo es case-insensitive. Puedes enviar `SIREN`, `siren` o `Siren`.
+
+## 🚀 Instalación y Configuración
+
+### Requisitos Previos
+
+- Node.js 18 o superior
+- React Native CLI
+- Android Studio (para Android)
+- Xcode (para iOS, solo macOS)
+- Cuenta de Supabase
+
+### Instalación
+
+1. **Clonar el repositorio**:
+   ```bash
+   git clone https://github.com/tu-usuario/GafasIOT.git
+   cd GafasIOT
+   ```
+
+2. **Instalar dependencias**:
+   ```bash
+   npm install
+   ```
+
+3. **Configurar Supabase**:
+   - Crea un proyecto en [supabase.com](https://supabase.com)
+   - Copia las credenciales
+   - Actualiza `src/utils/supabaseConfig.ts`:
+     ```typescript
+     export const SUPABASE_URL = 'tu-url-de-supabase';
+     export const SUPABASE_ANON_KEY = 'tu-anon-key';
+     ```
+
+4. **Configurar permisos Android**:
+   
+   Los permisos ya están configurados en `AndroidManifest.xml`:
+   - Bluetooth (BLUETOOTH_SCAN, BLUETOOTH_CONNECT)
+   - Ubicación (ACCESS_FINE_LOCATION)
+   - Micrófono (RECORD_AUDIO)
+
+5. **Ejecutar en Android**:
+   ```bash
+   npm run android
+   ```
+
+6. **Ejecutar en iOS** (requiere macOS):
+   ```bash
+   cd ios && pod install && cd ..
+   npm run ios
+   ```
+
+## 🧪 Modo Demo
+
+Si no tienes las gafas conectadas, puedes probar la app usando el botón **"⚠️ Simular"**.
+
+**Secuencia de simulación**:
+- **T=0s**: Conexión BLE simulada
+- **T=2s**: Alerta VERDE (timbre)
+- **T=10s**: Alerta AMARILLA (voz) → Clickeable
+- **T=20s**: Alerta ROJA (sirena) → Visible en transcripción
+
+### Probar Supresión de Alertas
+
+1. Click en "⚠️ Simular"
+2. Inmediatamente click en "🗣️ Conversar"
+3. Observa:
+   - Verde (T=2s) → **BLOQUEADA**
+   - Amarilla (T=10s) → **BLOQUEADA**
+   - Roja (T=20s) → **APARECE** (overlay global)
+
+## 📦 Generar APK Release
+
+Para generar un APK firmado para distribución:
+
+```bash
+cd android
+.\gradlew assembleRelease
 ```
 
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
+El APK estará en:
+```
+android/app/build/outputs/apk/release/app-release.apk
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+Ver [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md) para más detalles.
 
-```sh
-# Using npm
-npm run ios
+## 🔧 Características Técnicas Avanzadas
 
-# OR using Yarn
-yarn ios
-```
+### Supresión Inteligente de Alertas
+Durante el modo transcripción, la app suprime automáticamente alertas verdes y amarillas para no interrumpir la conversación. Solo las alertas rojas (peligro) pueden interrumpir.
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+**Implementación**: `src/context/AlertContext.tsx` usa `useRef` para evitar stale closures.
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+### Overlay Global de Alertas
+Las alertas se renderizan en `App.tsx` fuera del `NavigationContainer` con `zIndex: 9999`, garantizando visibilidad sobre todas las pantallas.
 
-## Step 3: Modify your app
+### Verificación de Estado de Bluetooth
+Antes de escanear dispositivos, la app verifica si el Bluetooth está activado y muestra un mensaje amigable con opción de reintentar.
 
-Now that you have successfully run the app, let's make changes!
+## 🐛 Bugs Resueltos
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+- ✅ Animación de "escuchando" se congelaba al aparecer alertas
+- ✅ Alertas verdes/amarillas aparecían durante transcripción
+- ✅ Alertas rojas quedaban ocultas detrás de otras pantallas
+- ✅ Mapeo de sonidos case-sensitive causaba que 'SIREN' no se reconociera
+- ✅ Estado de Bluetooth no se verificaba antes de escanear
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+## 🤝 Contribuir
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+Las contribuciones son bienvenidas. Por favor:
 
-## Congratulations! :tada:
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
 
-You've successfully run and modified your React Native App. :partying_face:
+## 📝 Roadmap
 
-### Now what?
+- [ ] Soporte para más idiomas (i18n)
+- [ ] Modo offline completo
+- [ ] Historial de alertas con filtros
+- [ ] Configuración personalizable de alertas
+- [ ] Integración con más modelos de gafas IoT
+- [ ] Modo oscuro/claro
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+## 📄 Licencia
 
-# Troubleshooting
+Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+## 👥 Equipo
 
-# Learn More
+**GafasIOT** - *Tecnología para la inclusión*
 
-To learn more about React Native, take a look at the following resources:
+Desarrollado como proyecto de tesis en la Universidad ESAN.
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+## 📞 Contacto
+
+Para preguntas o sugerencias, por favor abre un issue en GitHub.
+
+---
+
+⭐ Si este proyecto te fue útil, considera darle una estrella en GitHub!
