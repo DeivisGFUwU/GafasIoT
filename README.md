@@ -22,7 +22,8 @@ GafasIOT es una aplicación móvil diseñada para asistir a personas con discapa
 
 ## 📸 Screenshots
 
-> _Agrega capturas de pantalla de tu app aquí_
+> <img width="1113" height="1113" alt="GafasIoT_vFinal" src="https://github.com/user-attachments/assets/14ca6e0f-a70a-40bd-a8f3-b6b1a1ef106a" />
+
 
 ## 🛠️ Stack Tecnológico
 
