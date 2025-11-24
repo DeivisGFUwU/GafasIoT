@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Device } from 'react-native-ble-plx';
 import { bleService } from '../../services/bleService';
+import { detectionService } from '../../services/DetectionService';
 import { useNavigation } from '@react-navigation/native';
+import { useApp } from '../../context/AppContext';
 
 export const ScanScreen: React.FC = () => {
     const [devices, setDevices] = useState<Device[]>([]);
     const [isScanning, setIsScanning] = useState(false);
     const [bleEnabled, setBleEnabled] = useState<boolean | null>(null);
-    const navigation = useNavigation();
+    const navigation = useNavigation<any>();
+    const { setIsBleConnected } = useApp();
 
     useEffect(() => {
         checkBleAndStart();
@@ -77,7 +80,24 @@ export const ScanScreen: React.FC = () => {
         try {
             await bleService.connectToDevice(device.id);
             Alert.alert('Conectado', `Conectado a ${device.name || device.id}`);
-            // Here we would navigate or update state
+
+            setIsBleConnected(true);
+
+            // Start listening for notifications
+            await bleService.monitorDevice(device.id, async (data) => {
+                console.log('BLE Data received in Screen:', data);
+                try {
+                    const payload = detectionService.adaptFirmwarePayload(data);
+                    await detectionService.insertDetection(payload);
+                    console.log('Detection saved:', payload);
+                } catch (err) {
+                    console.error('Error processing BLE data:', err);
+                }
+            });
+
+            // Navigate to Home to see alerts
+            navigation.navigate('Home');
+
         } catch (e: any) {
             Alert.alert('Error de conexión', e.message);
         }

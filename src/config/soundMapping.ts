@@ -7,14 +7,19 @@ export interface SoundConfig {
 export const SOUND_MAP: Record<string, SoundConfig> = {
     // --- PELIGRO (ROJO) ---
     'SIREN': { label: 'Sirena', priority: 'rojo', icon: 'alert-circle' },
+    'siren': { label: 'Sirena', priority: 'rojo', icon: 'alert-circle' },
     'CAR_HORN': { label: 'Claxon', priority: 'rojo', icon: 'car' },
+    'car_horn': { label: 'Claxon', priority: 'rojo', icon: 'car' },
 
-    // --- INFORMATIVO / RUIDO (VERDE) ---
-    'DRILLING': { label: 'Obras/Taladro', priority: 'verde', icon: 'hammer' },
+    // --- RUIDO (VERDE - Info) ---
+    'DRILLING': { label: 'Obras', priority: 'verde', icon: 'hammer' },
+    'drilling': { label: 'Obras', priority: 'verde', icon: 'hammer' },
+    'ENGINE_IDLING': { label: 'Motor', priority: 'verde', icon: 'truck' },
+    'engine_idling': { label: 'Motor', priority: 'verde', icon: 'truck' },
     'AIR_CONDITIONER': { label: 'Aire Acond.', priority: 'verde', icon: 'fan' },
-    'ENGINE_IDLING': { label: 'Motor Auto', priority: 'verde', icon: 'truck' },
+    'air_conditioner': { label: 'Aire Acond.', priority: 'verde', icon: 'fan' },
 
-    // --- SOCIAL (Mantenemos esto para el futuro/demo) ---
-    'voice': { label: 'Voz', priority: 'amarillo', icon: 'mic' },
-    'human_voice': { label: 'Voz', priority: 'amarillo', icon: 'mic' }
+    // --- FUTURO (AMARILLO) ---
+    'voice': { label: 'Voz Detectada', priority: 'amarillo', icon: 'mic' },
+    'human_voice': { label: 'Voz Detectada', priority: 'amarillo', icon: 'mic' }
 };

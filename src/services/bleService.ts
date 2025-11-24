@@ -79,6 +79,49 @@ class BLEService {
             console.error('Error disconnecting:', e);
         }
     }
+    async monitorDevice(deviceId: string, onDataReceived: (data: any) => void) {
+        console.log('Starting monitor for device:', deviceId);
+        this.manager.monitorCharacteristicForDevice(
+            deviceId,
+            BLEService.SERVICE_UUID,
+            BLEService.CHARACTERISTIC_UUID,
+            (error, characteristic) => {
+                if (error) {
+                    console.error('Monitor error:', error);
+                    return;
+                }
+                if (characteristic?.value) {
+                    try {
+                        const decodedValue = this.base64Decode(characteristic.value);
+                        console.log('Received raw BLE data:', decodedValue);
+                        const json = JSON.parse(decodedValue);
+                        onDataReceived(json);
+                    } catch (e) {
+                        console.error('Error parsing BLE data:', e);
+                    }
+                }
+            }
+        );
+    }
+
+    private base64Decode(str: string): string {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+        let output = '';
+        str = String(str).replace(/=+$/, '');
+        if (str.length % 4 === 1) {
+            throw new Error("'atob' failed: The string to be decoded is not correctly encoded.");
+        }
+        for (
+            let bc = 0, bs = 0, buffer, i = 0;
+            (buffer = str.charAt(i++));
+            ~buffer && ((bs = bc % 4 ? bs * 64 + buffer : buffer), bc++ % 4)
+                ? (output += String.fromCharCode(255 & (bs >> ((-2 * bc) & 6))))
+                : 0
+        ) {
+            buffer = chars.indexOf(buffer);
+        }
+        return output;
+    }
 }
 
 export const bleService = new BLEService();

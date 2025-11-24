@@ -88,6 +88,7 @@ src/
 
 ### Especificaciones BLE
 
+- **Device Name**: `LentesSordos`
 - **Service UUID**: `12345678-1234-1234-1234-1234567890ab`
 - **Characteristic UUID**: `abcdefab-1234-5678-9abc-1234567890ab`
 

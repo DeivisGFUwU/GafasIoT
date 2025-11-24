@@ -5,9 +5,10 @@
 #include <ArduinoJson.h>
 
 // --- CONFIGURATION ---
-#define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
-#define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
-#define DEVICE_NAME         "GafasIOT_ESP32"
+// UUIDs match the App's configuration
+#define SERVICE_UUID        "12345678-1234-1234-1234-1234567890ab"
+#define CHARACTERISTIC_UUID "abcdefab-1234-5678-9abc-1234567890ab"
+#define DEVICE_NAME         "LentesSordos"
 
 // I2S Config (INMP441)
 #define I2S_WS 25
@@ -82,27 +83,28 @@ void loop() {
         StaticJsonDocument<200> doc;
         doc["timestamp"] = millis() / 1000;
         
-        // Randomly generate alert type
+        // Randomly generate alert type using Team A's format (lowercase tags)
         int r = random(0, 10);
         if (r > 7) {
-           doc["tipo"] = "sirena";
-           doc["prioridad"] = "rojo";
-           doc["direccion"] = "atrás";
-           doc["intensidad"] = 0.9;
-        } else if (r > 4) {
-           doc["tipo"] = "voz";
-           doc["prioridad"] = "amarillo";
-           doc["direccion"] = "derecha";
-           doc["intensidad"] = 0.6;
+           doc["top"] = "siren";   // Peligro (Rojo)
+           doc["lado"] = "atras";
+           doc["conf"] = 0.9;
+        } else if (r > 5) {
+           doc["top"] = "car_horn"; // Peligro (Rojo)
+           doc["lado"] = "izquierda";
+           doc["conf"] = 0.85;
+        } else if (r > 3) {
+           doc["top"] = "voice";    // Atención (Amarillo)
+           doc["lado"] = "derecha";
+           doc["conf"] = 0.7;
         } else {
-           doc["tipo"] = "ruido";
-           doc["prioridad"] = "verde";
-           doc["direccion"] = "frente";
-           doc["intensidad"] = 0.3;
+           doc["top"] = "drilling"; // Info (Verde)
+           doc["lado"] = "frente";
+           doc["conf"] = 0.4;
         }
         
-        doc["modo"] = "online";
-        doc["fuente"] = "esp32";
+        // doc["modo"] = "online"; // App sets this automatically
+        // doc["fuente"] = "esp32";
 
         char jsonBuffer[512];
         serializeJson(doc, jsonBuffer);
