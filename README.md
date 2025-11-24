@@ -89,13 +89,37 @@ src/
 
 ### Especificaciones BLE
 
-- **Device Name**: `LentesSordos`
+- **Device Name**: `LentesSordos`, `ESP32`, `Gafas`
 - **Service UUID**: `12345678-1234-1234-1234-1234567890ab`
 - **Characteristic UUID**: `abcdefab-1234-5678-9abc-1234567890ab`
 
 ### Formato de Datos (JSON Payload)
 
-El firmware debe enviar notificaciones con el siguiente formato:
+#### ✨ Nuevo Formato Compacto (Recomendado)
+
+El firmware debe enviar notificaciones con el siguiente formato optimizado:
+
+```json
+{
+  "S": "Si",    // Código de sonido (2-3 caracteres)
+  "L": "Iz"     // Código de dirección (2-3 caracteres)
+}
+```
+
+**Mapeo de Códigos de Sonido (S)**:
+- `"Si"` → Sirena (🔴 ROJO)
+- `"Ca"` → Claxon (🔴 ROJO)
+- `"Dr"` → Drilling/Obras (🟢 VERDE)
+- `"En"` → Engine/Motor (🟢 VERDE)
+- `"Ai"` → Air Conditioner/Aire Acond. (🟢 VERDE)
+- `"Un"` → Unknown/Desconocido (🟢 VERDE)
+
+**Mapeo de Códigos de Dirección (L)**:
+- `"Iz"` → Izquierda
+- `"Der"` → Derecha
+- `"Ce"` → Centro/Frente
+
+#### 📜 Formato Anterior (Soportado)
 
 ```json
 {
@@ -105,19 +129,39 @@ El firmware debe enviar notificaciones con el siguiente formato:
 }
 ```
 
+> **Nota**: La app soporta ambos formatos automáticamente. El nuevo formato es más eficiente para transmisión BLE.
+
+### Sistema de Buffering BLE
+
+La app implementa un sistema de buffering robusto que:
+- ✅ Acumula fragmentos de datos BLE (típicamente ~20 bytes por paquete)
+- ✅ Detecta mensajes completos buscando el delimitador `}`
+- ✅ Procesa solo mensajes JSON válidos y completos
+- ✅ Previene errores de parsing por fragmentación
+- ✅ Incluye protección contra overflow (límite 2000 caracteres)
+
+**Logs de debugging**:
+```
+📦 [BLE] Received chunk: {"S":"Si"
+🔄 [BLE] Buffer state: {"S":"Si"
+⏳ [BLE] Waiting for more data...
+📦 [BLE] Received chunk: ,"L":"Iz"}
+✅ [BLE] Processing complete message: {"S":"Si","L":"Iz"}
+```
+
 ### Clases de Sonido Soportadas
 
 #### 🚨 Peligro (Rojo)
-- `SIREN` → Sirena
-- `CAR_HORN` → Claxon
+- `SIREN` / `Si` → Sirena
+- `CAR_HORN` / `Ca` → Claxon
 
 #### ⚠️ Atención (Amarillo)
 - `voice` / `human_voice` → Voz humana
 
 #### 🔔 Informativo (Verde)
-- `DRILLING` → Obras/Taladro
-- `AIR_CONDITIONER` → Aire Acondicionado
-- `ENGINE_IDLING` → Motor de Auto
+- `DRILLING` / `Dr` → Obras/Taladro
+- `AIR_CONDITIONER` / `Ai` → Aire Acondicionado
+- `ENGINE_IDLING` / `En` → Motor de Auto
 
 > **Nota**: El mapeo es case-insensitive. Puedes enviar `SIREN`, `siren` o `Siren`.
 
@@ -226,6 +270,10 @@ Antes de escanear dispositivos, la app verifica si el Bluetooth está activado y
 - ✅ Alertas rojas quedaban ocultas detrás de otras pantallas
 - ✅ Mapeo de sonidos case-sensitive causaba que 'SIREN' no se reconociera
 - ✅ Estado de Bluetooth no se verificaba antes de escanear
+- ✅ **Fragmentación de datos BLE**: Mensajes JSON se cortaban en múltiples paquetes
+- ✅ **Parsing incompleto**: App intentaba procesar fragmentos en vez de mensajes completos
+- ✅ **Alertas no se disparaban**: Detecciones se guardaban pero no mostraban alertas visuales
+- ✅ **Warnings de NativeEventEmitter**: Logs limpios sin advertencias de librerías
 
 ## 🤝 Contribuir
 

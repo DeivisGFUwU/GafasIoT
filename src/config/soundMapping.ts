@@ -8,8 +8,10 @@ export const SOUND_MAP: Record<string, SoundConfig> = {
     // --- PELIGRO (ROJO) ---
     'SIREN': { label: 'Sirena', priority: 'rojo', icon: 'alert-circle' },
     'siren': { label: 'Sirena', priority: 'rojo', icon: 'alert-circle' },
+    'sirena': { label: 'Sirena', priority: 'rojo', icon: 'alert-circle' }, // Spanish support
     'CAR_HORN': { label: 'Claxon', priority: 'rojo', icon: 'car' },
     'car_horn': { label: 'Claxon', priority: 'rojo', icon: 'car' },
+    'claxon': { label: 'Claxon', priority: 'rojo', icon: 'car' }, // Spanish support
 
     // --- RUIDO (VERDE - Info) ---
     'DRILLING': { label: 'Obras', priority: 'verde', icon: 'hammer' },

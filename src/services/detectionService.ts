@@ -17,58 +17,100 @@ export interface DetectionPayload {
     extra?: any;
 }
 
+// Mapeo de códigos cortos del ESP32
+const SOUND_CODE_MAP: Record<string, string> = {
+    'Si': 'siren',
+    'Ca': 'car_horn',
+    'Dr': 'drilling',
+    'En': 'engine_idling',
+    'Ai': 'air_conditioner',
+    'Un': 'unknown'
+};
+
+const SIDE_CODE_MAP: Record<string, string> = {
+    'Iz': 'izquierda',
+    'Der': 'derecha',
+    'Ce': 'frente'
+};
+
 export const detectionService = {
     /**
      * Adapts the raw firmware JSON to the App's DetectionPayload format.
-     * Firmware Format: { "top": string, "lado": string, "conf": number }
+     * NEW Format: { "S": "Si", "L": "Iz" }
+     * OLD Format: { "top": "siren", "lado": "izquierda", "conf": 0.8 }
      */
     adaptFirmwarePayload(raw: any): DetectionPayload {
         if (!raw || typeof raw !== 'object') {
             throw new Error('Invalid raw payload: must be an object');
         }
 
-        // Try to find the sound config with case-insensitive lookup
-        const rawTop = raw.top;
-        let config = SOUND_MAP[rawTop]; // Try exact match first
+        let soundKey: string;
+        let sideKey: string;
+        let confidence = 0.5;
+
+        // Check if it's the NEW format ({"S":"Si","L":"Iz"})
+        if (raw.S && raw.L) {
+            console.log('🆕 [DetectionService] New format detected:', raw);
+
+            // Map short codes to full names
+            soundKey = SOUND_CODE_MAP[raw.S] || 'unknown';
+            sideKey = SIDE_CODE_MAP[raw.L] || 'frente';
+
+            console.log(`📍 [DetectionService] Mapped: S="${raw.S}" → "${soundKey}", L="${raw.L}" → "${sideKey}"`);
+        }
+        // OLD format ({"top":"siren","lado":"izquierda"})
+        else if (raw.top || raw.sound) {
+            console.log('📜 [DetectionService] Old format detected:', raw);
+            soundKey = raw.top || raw.sound;
+            sideKey = raw.lado || raw.side || 'frente';
+            confidence = raw.conf || 0.5;
+        }
+        else {
+            throw new Error('Unknown payload format');
+        }
+
+        // Find sound config
+        let config = SOUND_MAP[soundKey]; // Try exact match first
 
         if (!config) {
             // Try lowercase
-            const topLower = rawTop?.toLowerCase();
-            config = SOUND_MAP[topLower];
+            const soundLower = soundKey?.toLowerCase();
+            config = SOUND_MAP[soundLower];
         }
 
         if (!config) {
             // Try uppercase
-            const topUpper = rawTop?.toUpperCase();
-            config = SOUND_MAP[topUpper];
+            const soundUpper = soundKey?.toUpperCase();
+            config = SOUND_MAP[soundUpper];
         }
 
         // Fallback
         if (!config) {
-            console.warn(`Sound "${rawTop}" not found in SOUND_MAP, using fallback`);
+            console.warn(`⚠️ [DetectionService] Sound "${soundKey}" not found in SOUND_MAP, using fallback`);
             config = { label: 'Ruido', priority: 'verde', icon: 'help-circle' };
         }
 
-        console.log(`DetectionService: Mapped "${rawTop}" -> priority: ${config.priority}, label: ${config.label}`);
+        console.log(`✅ [DetectionService] Final mapping: "${soundKey}" → priority: ${config.priority}, label: ${config.label}`);
 
         // Map direction
         const directionMap: Record<string, string> = {
             'izquierda': 'izquierda',
             'derecha': 'derecha',
             'centro': 'frente',
+            'frente': 'frente',
             'atras': 'atrás'
         };
-        const direccion = directionMap[raw.lado?.toLowerCase()] || 'frente';
+        const direccion = directionMap[sideKey?.toLowerCase()] || 'frente';
 
         return {
             timestamp: Math.floor(Date.now() / 1000),
             tipo: config.label.toLowerCase(), // Use label as type for now (e.g. "sirena")
             prioridad: config.priority,
             direccion: direccion as any,
-            intensidad: raw.conf || 0.5,
+            intensidad: confidence,
             modo: 'online',
             fuente: 'esp32',
-            extra: { raw_top: raw.top }
+            extra: { raw_sound: soundKey, raw_side: sideKey }
         };
     },
 

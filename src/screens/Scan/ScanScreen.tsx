@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Device } from 'react-native-ble-plx';
-import { bleService } from '../../services/bleService';
+import { bleService, BLEService } from '../../services/bleService';
 import { detectionService } from '../../services/DetectionService';
 import { useNavigation } from '@react-navigation/native';
 import { useApp } from '../../context/AppContext';
+import { useAlert } from '../../context/AlertContext';
 
 export const ScanScreen: React.FC = () => {
     const [devices, setDevices] = useState<Device[]>([]);
     const [isScanning, setIsScanning] = useState(false);
     const [bleEnabled, setBleEnabled] = useState<boolean | null>(null);
+    const [statusMessage, setStatusMessage] = useState<string>('');
     const navigation = useNavigation<any>();
     const { setIsBleConnected } = useApp();
+    const { triggerAlert } = useAlert();
 
     useEffect(() => {
         checkBleAndStart();
@@ -21,11 +24,14 @@ export const ScanScreen: React.FC = () => {
     }, []);
 
     const checkBleAndStart = async () => {
+        setStatusMessage('Verificando Bluetooth...');
         const isEnabled = await bleService.checkBluetoothState();
         setBleEnabled(isEnabled);
 
         if (isEnabled) {
             startScan();
+        } else {
+            setStatusMessage('Bluetooth desactivado');
         }
     };
 
@@ -54,21 +60,30 @@ export const ScanScreen: React.FC = () => {
 
         setIsScanning(true);
         setDevices([]);
+        setStatusMessage('Escaneando dispositivos BLE...');
 
         bleService.startScan(
             (device) => {
-                if (device.name) { // Filter out unnamed devices to reduce noise
-                    setDevices((prev) => {
-                        if (!prev.find((d) => d.id === device.id)) {
-                            return [...prev, device];
-                        }
-                        return prev;
-                    });
+                // Broad scan filter: Check name OR Service UUIDs
+                const name = device.name || device.localName || '';
+                const isTarget = name.toLowerCase().includes('esp32') ||
+                    name.toLowerCase().includes('gafas') ||
+                    name.toLowerCase().includes('lentessordos') ||
+                    (device.serviceUUIDs && device.serviceUUIDs.includes(BLEService.SERVICE_UUID));
+
+                if (isTarget) {
+                    // Auto-connect logic:
+                    console.log('Target Device found:', name, device.id);
+                    setStatusMessage(`Encontrado: ${name || 'Dispositivo'}. Conectando...`);
+                    bleService.stopScan();
+                    setIsScanning(false);
+                    connect(device);
                 }
             },
             (error) => {
                 console.error(error);
                 setIsScanning(false);
+                setStatusMessage(`Error de escaneo: ${error.message}`);
                 Alert.alert('Error de escaneo', error.message);
             }
         );
@@ -78,27 +93,45 @@ export const ScanScreen: React.FC = () => {
         bleService.stopScan();
         setIsScanning(false);
         try {
+            setStatusMessage('Conectando y descubriendo servicios...');
             await bleService.connectToDevice(device.id);
-            Alert.alert('Conectado', `Conectado a ${device.name || device.id}`);
 
+            setStatusMessage('Conectado. Activando notificaciones...');
             setIsBleConnected(true);
 
             // Start listening for notifications
-            await bleService.monitorDevice(device.id, async (data) => {
-                console.log('BLE Data received in Screen:', data);
-                try {
-                    const payload = detectionService.adaptFirmwarePayload(data);
-                    await detectionService.insertDetection(payload);
-                    console.log('Detection saved:', payload);
-                } catch (err) {
-                    console.error('Error processing BLE data:', err);
+            await bleService.monitorDevice(
+                device.id,
+                async (data) => {
+                    console.log('🔔 [ScanScreen] BLE Data received:', data);
+                    try {
+                        const payload = detectionService.adaptFirmwarePayload(data);
+                        console.log('📦 [ScanScreen] Detection payload:', payload);
+
+                        // Use AlertContext to trigger alert (handles DB insert + notification)
+                        await triggerAlert(payload);
+
+                        console.log('✅ [ScanScreen] Alert triggered successfully');
+                    } catch (err) {
+                        console.error('❌ [ScanScreen] Error processing BLE data:', err);
+                    }
+                },
+                () => {
+                    console.log('Device disconnected callback triggered');
+                    setIsBleConnected(false);
+                    setStatusMessage('Dispositivo desconectado');
+                    Alert.alert('Desconectado', 'El dispositivo se ha desconectado.');
+                    // Optionally navigate back to ScanScreen if we are not there, 
+                    // but since we passed the callback here, we might need a global handler.
+                    // For now, updating the context state is the critical part.
                 }
-            });
+            );
 
             // Navigate to Home to see alerts
             navigation.navigate('Home');
 
         } catch (e: any) {
+            setStatusMessage(`Error de conexión: ${e.message}`);
             Alert.alert('Error de conexión', e.message);
         }
     };
@@ -159,8 +192,9 @@ export const ScanScreen: React.FC = () => {
                         </View>
                     ) : (
                         <View style={styles.emptyContainer}>
-                            <Text style={styles.emptyIcon}>🔍</Text>
-                            <Text style={styles.emptyText}>Buscando dispositivos...</Text>
+                            <ActivityIndicator size="large" color="#33b5e5" style={{ marginBottom: 20 }} />
+                            <Text style={styles.emptyTitle}>Buscando Gafas...</Text>
+                            <Text style={styles.emptyText}>{statusMessage || 'Acerca el dispositivo para conectar automáticamente.'}</Text>
                         </View>
                     )
                 }

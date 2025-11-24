@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { Detection } from '../types';
-import { DetectionPayload, detectionService } from '../services/detectionService';
+import { DetectionPayload, detectionService } from '../services/DetectionService';
 import { notificationService } from '../services/notificationService';
 import { useApp } from './AppContext';
 
