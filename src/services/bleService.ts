@@ -190,8 +190,14 @@ export class BLEService {
             return result.trim();
         };
 
-        const top = extractAfter("top");
-        const lado = extractAfter("lado");
+        let top = extractAfter("top");
+        let lado = extractAfter("lado");
+
+        // NEW: Check for short codes if long codes are missing
+        // We look for "s" and "l" specifically. 
+        // Note: extractAfter finds the first occurrence. In a JSON-like string {"s":"val"}, it should work.
+        if (top === "-") top = extractAfter("s");
+        if (lado === "-") lado = extractAfter("l");
 
         // Try to extract confidence if present, otherwise default
         let conf = 0.0;
@@ -203,9 +209,42 @@ export class BLEService {
             }
         }
 
+        // Map short codes to full names if needed (DetectionService handles this too, but good to have here)
+        // Actually, DetectionService.adaptFirmwarePayload handles the mapping from "Si" -> "siren", etc.
+        // So we just need to pass the values.
+        // However, we need to return an object that DetectionService understands.
+        // DetectionService expects:
+        // 1. { S: "Si", L: "Iz" } OR
+        // 2. { top: "siren", lado: "izquierda" }
+
+        // If we extracted "Si" from "s", we should probably return it as "S" or "top".
+        // Let's return a hybrid object that DetectionService can handle.
+
         return {
             top: top === "" ? "-" : top,
             lado: lado === "" ? "-" : lado,
+            // Pass them as S/L as well if they were found via short codes, 
+            // but DetectionService checks S/L first, then top/lado.
+            // To be safe, let's just populate top/lado which is what we extracted.
+            // Wait, if top="Si" (from 's'), DetectionService might not recognize "Si" as a 'top' key if it expects 'siren'.
+            // Let's check DetectionService.adaptFirmwarePayload again.
+            // It maps S -> soundKey.
+            // It maps top -> soundKey.
+            // Then it looks up soundKey in SOUND_MAP.
+            // SOUND_MAP has 'Si': ... ? No.
+            // SOUND_CODE_MAP in DetectionService maps 'Si' -> 'siren'.
+            // But that is ONLY used if raw.S is present.
+            // If we return { top: "Si" }, it goes to the "OLD format" block.
+            // The OLD format block does NOT use SOUND_CODE_MAP.
+            // So { top: "Si" } will fail to map to 'siren' because SOUND_MAP doesn't have "Si".
+
+            // FIX: We must return S/L if we found them, or map them here.
+            // Since we are in the fallback parser, let's try to reconstruct the object structure DetectionService expects.
+
+            S: top, // If we found "Si", put it here.
+            L: lado,
+
+            // Also keep top/lado for backward compatibility or if they were found as full words
             conf: conf
         };
     }

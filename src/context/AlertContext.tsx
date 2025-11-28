@@ -18,6 +18,10 @@ export const AlertProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     // Use a ref to track isTranscribing to avoid stale closures in callbacks (like DemoService)
     const isTranscribingRef = React.useRef(isTranscribing);
+
+    // Throttling Ref: Stores timestamp of last alert per type+direction
+    const lastAlertsRef = React.useRef<Record<string, number>>({});
+
     useEffect(() => {
         isTranscribingRef.current = isTranscribing;
         console.log('AlertContext: isTranscribing updated to', isTranscribing);
@@ -35,6 +39,21 @@ export const AlertProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             // Proceed to alert
         }
         // -------------------------
+
+        // --- THROTTLING LOGIC ---
+        const now = Date.now();
+        const throttleKey = `${payload.tipo}_${payload.direccion}`;
+        const lastTime = lastAlertsRef.current[throttleKey] || 0;
+        const THROTTLE_DURATION = 3000; // 3 seconds
+
+        if (now - lastTime < THROTTLE_DURATION) {
+            console.log(`🚫 [AlertContext] Throttled duplicate alert: ${throttleKey} (Last: ${now - lastTime}ms ago)`);
+            return;
+        }
+
+        // Update timestamp for this alert type
+        lastAlertsRef.current[throttleKey] = now;
+        // ------------------------
 
         try {
             const newDetection = await detectionService.insertDetection(payload);

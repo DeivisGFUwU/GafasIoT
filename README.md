@@ -260,6 +260,9 @@ Durante el modo transcripción, la app suprime automáticamente alertas verdes y
 ### Overlay Global de Alertas
 Las alertas se renderizan en `App.tsx` fuera del `NavigationContainer` con `zIndex: 9999`, garantizando visibilidad sobre todas las pantallas.
 
+### Throttling de Alertas (Anti-Spam)
+Para evitar saturación, la app ignora alertas idénticas (mismo sonido y dirección) que lleguen en un intervalo menor a **3 segundos**. Implementado en `AlertContext.tsx`.
+
 ### Verificación de Estado de Bluetooth
 Antes de escanear dispositivos, la app verifica si el Bluetooth está activado y muestra un mensaje amigable con opción de reintentar.
 
@@ -272,6 +275,9 @@ Antes de escanear dispositivos, la app verifica si el Bluetooth está activado y
 - ✅ Estado de Bluetooth no se verificaba antes de escanear
 - ✅ **Fragmentación de datos BLE**: Mensajes JSON se cortaban en múltiples paquetes
 - ✅ **Parsing incompleto**: App intentaba procesar fragmentos en vez de mensajes completos
+- ✅ **Fallback Parser BLE**: Soporte robusto para formato nuevo (`S`, `L`) incluso si falla `JSON.parse`
+- ✅ **Throttling de Alertas**: Prevención de alertas duplicadas (mismo tipo/dirección) en ventana de 3s
+- ✅ **Lógica Conversación**: Alertas Verdes/Amarillas ignoradas durante transcripción; Rojas interrumpen
 - ✅ **Alertas no se disparaban**: Detecciones se guardaban pero no mostraban alertas visuales
 - ✅ **Warnings de NativeEventEmitter**: Logs limpios sin advertencias de librerías
 
