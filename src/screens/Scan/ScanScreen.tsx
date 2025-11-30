@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Device } from 'react-native-ble-plx';
 import { bleService, BLEService } from '../../services/bleService';
-import { detectionService } from '../../services/DetectionService';
+import { detectionService } from '../../services/detectionService';
 import { useNavigation } from '@react-navigation/native';
 import { useApp } from '../../context/AppContext';
 import { useAlert } from '../../context/AlertContext';

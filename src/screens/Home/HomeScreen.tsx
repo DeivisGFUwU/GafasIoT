@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Button, FlatList, TouchableOpacity, Animated, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { detectionService, DetectionPayload } from '../../services/DetectionService';
+import { detectionService, DetectionPayload } from '../../services/detectionService';
 import { notificationService } from '../../services/notificationService';
 import { authService } from '../../services/authService';
 import { Detection } from '../../types';

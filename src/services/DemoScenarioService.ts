@@ -1,5 +1,5 @@
 import { generateUUID } from '../utils/uuid';
-import { detectionService } from './DetectionService';
+import { detectionService } from './detectionService';
 
 export const DemoScenarioService = {
     timeouts: [] as NodeJS.Timeout[],
