@@ -53,7 +53,7 @@ export const detectionService = {
             console.log('🆕 [DetectionService] New format detected:', raw);
 
             // Map short codes to full names
-            soundKey = SOUND_CODE_MAP[raw.S] || 'unknown';
+            soundKey = SOUND_CODE_MAP[raw.S] || raw.S;
             sideKey = SIDE_CODE_MAP[raw.L] || 'frente';
 
             console.log(`📍 [DetectionService] Mapped: S="${raw.S}" → "${soundKey}", L="${raw.L}" → "${sideKey}"`);

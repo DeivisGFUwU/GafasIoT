@@ -45,8 +45,8 @@ export const DemoScenarioService = {
 
         // T=20: Red Alert (Siren)
         addStep(() => {
-            console.log('T=20: Red Alert (Raw: SIREN)');
-            const raw = { top: 'SIREN', lado: 'atras', conf: 0.95 };
+            console.log('T=20: Red Alert (Raw: siren)');
+            const raw = { top: 'siren', lado: 'atras', conf: 0.95 };
             const payload = detectionService.adaptFirmwarePayload(raw);
             payload.id = generateUUID();
             triggerAlert(payload);

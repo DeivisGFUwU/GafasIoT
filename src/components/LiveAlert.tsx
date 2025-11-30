@@ -60,8 +60,7 @@ export const LiveAlert: React.FC<LiveAlertProps> = ({ detection, onPress }) => {
     const icon = ICONS[detection.tipo.toLowerCase()] || ICONS.default;
     const arrow = ARROWS[detection.direccion.toLowerCase()] || '';
 
-    const isVoiceAlert = detection.tipo.toLowerCase() === 'voz' || detection.tipo.toLowerCase() === 'grito';
-    const shouldBeClickable = isVoiceAlert && onPress;
+    const shouldBeClickable = (detection.prioridad === 'amarillo') && onPress;
 
     const content = (
         <Animated.View

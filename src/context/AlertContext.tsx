@@ -31,6 +31,7 @@ export const AlertProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         // --- SUPPRESSION LOGIC ---
         // Use ref.current to get the latest value even if triggerAlert was captured in a closure
         if (isTranscribingRef.current) {
+            console.log(`[AlertContext] User is transcribing. Checking priority: ${payload.prioridad}`);
             if (payload.prioridad !== 'rojo') {
                 console.log('SUPPRESSED: User is transcribing and alert is not red.');
                 return; // SILENCE
