@@ -23,5 +23,6 @@ export const SOUND_MAP: Record<string, SoundConfig> = {
 
     // --- FUTURO (AMARILLO) ---
     'voice': { label: 'Voz Detectada', priority: 'amarillo', icon: 'mic' },
-    'human_voice': { label: 'Voz Detectada', priority: 'amarillo', icon: 'mic' }
+    'human_voice': { label: 'Voz Detectada', priority: 'amarillo', icon: 'mic' },
+    'Voz': { label: 'Voz Detectada', priority: 'amarillo', icon: 'mic' }
 };

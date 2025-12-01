@@ -24,6 +24,7 @@ const SOUND_CODE_MAP: Record<string, string> = {
     'Dr': 'drilling',
     'En': 'engine_idling',
     'Ai': 'air_conditioner',
+    'Vz': 'voice',
     'Un': 'unknown'
 };
 
