@@ -4,6 +4,8 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7.0-blue.svg)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+**IMPORTANTE:** el QR te lleva a descargar la app(.apk). Al intentar conectarte a la base de datos con las credenciales, o crear nuevo usuario, es posible que no puedas. Esto se debe a que en SupaBase (la base de datos usada para este proyecto) si no se realiza algún uso de la BD durante más de 7 días significa la puesta en pausa del proyecto y no habrá ninguna comunicación. Avísame si quieres testearlo para activar la BD dado que es gratuita.
+
 GafasIOT es una aplicación móvil diseñada para asistir a personas con discapacidad auditiva. Se conecta a unas gafas inteligentes (ESP32) para detectar sonidos del entorno en tiempo real, clasificarlos y mostrarlos como alertas visuales y hápticas. Además, incluye un modo de transcripción de voz a texto para facilitar conversaciones.
 
 ## 🎯 Características Principales
@@ -308,7 +310,7 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para
 
 **GafasIOT** - *Tecnología para la inclusión*
 
-Desarrollado como proyecto de tesis en la Universidad ESAN.
+Desarrollado como proyecto del curso de Desarrollo de Soluciones de IoT en la Universidad ESAN.
 
 ## 📞 Contacto
 
